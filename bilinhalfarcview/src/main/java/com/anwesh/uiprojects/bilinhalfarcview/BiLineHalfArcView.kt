@@ -146,7 +146,7 @@ class BiLineHalfArcView(ctx : Context) : View(ctx) {
 
         fun draw(canvas : Canvas, paint : Paint) {
             canvas.drawBLHANode(i, state.scale, paint)
-            next?.draw(canvas, paint)
+            prev?.draw(canvas, paint)
         }
 
         fun update(cb : (Int, Float) -> Unit) {
@@ -168,7 +168,31 @@ class BiLineHalfArcView(ctx : Context) : View(ctx) {
                 return curr
             }
             cb()
-            return this 
+            return this
         }
+    }
+
+    data class BiLineHalfArc(var i : Int) {
+
+        private var curr : BLHANode = BLHANode(0)
+        private var dir : Int = 1
+
+        fun draw(canvas : Canvas, paint : Paint) {
+            curr.draw(canvas, paint)
+        }
+
+        fun update(cb : (Int, Float) -> Unit) {
+            curr.update {i, scl ->
+                curr = curr.getNext(dir) {
+                    dir *= -1
+                }
+                cb(i, scl)
+            }
+        }
+
+        fun startUpdating(cb : () -> Unit) {
+            curr.startUpdating(cb)
+        }
+
     }
 }
