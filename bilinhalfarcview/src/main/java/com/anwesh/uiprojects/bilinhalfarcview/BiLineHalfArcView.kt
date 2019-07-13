@@ -193,6 +193,28 @@ class BiLineHalfArcView(ctx : Context) : View(ctx) {
         fun startUpdating(cb : () -> Unit) {
             curr.startUpdating(cb)
         }
+    }
+
+    data class Renderer(var view : BiLineHalfArcView) {
+
+        private val animator : Animator = Animator(view)
+        private val blha : BiLineHalfArc = BiLineHalfArc(0)
+
+        fun draw(canvas : Canvas, paint : Paint) {
+            canvas.drawColor(backColor)
+            blha.draw(canvas, paint)
+            animator.animate {
+                blha.update {i, scl ->
+                    animator.stop()
+                }
+            }
+        }
+
+        fun handleTap() {
+            blha.startUpdating {
+                animator.start()
+            }
+        }
 
     }
 }
