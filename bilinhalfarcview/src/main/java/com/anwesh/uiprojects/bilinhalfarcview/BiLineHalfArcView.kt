@@ -12,9 +12,10 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.content.Context
 import android.app.Activity
+import android.util.Log
 
 val nodes : Int = 5
-val lines : Int = 2
+val lines : Int = 3
 val scGap : Float = 0.05f
 val scDiv : Double = 0.51
 val strokeFactor : Int = 90
@@ -23,11 +24,12 @@ val foreColor : Int = Color.parseColor("#1A237E")
 val backColor : Int = Color.parseColor("#BDBDBD")
 val deg : Float = 90f
 val lFactor : Float = 2.8f
+val delay : Long = 20
 
 fun Int.inverse() : Float = 1f / this
 fun Float.scaleFactor() : Float = Math.floor(this / scDiv).toFloat()
 fun Float.maxScale(i : Int, n : Int) : Float = Math.max(0f, this - i * n.inverse())
-fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale(i, n))
+fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale(i, n)) * n
 fun Float.mirrorValue(a : Int, b : Int) : Float {
     val k : Float = scaleFactor()
     return (1 - k) * a.inverse() + k * b.inverse()
@@ -40,9 +42,12 @@ fun Canvas.drawHalfArc(sc : Float, size : Float, paint : Paint) {
 }
 
 fun Canvas.drawBiLine(i : Int, sc : Float, size : Float, paint : Paint) {
+    val lSize = (size / lFactor)
+    val angleDeg : Float = deg / (lines - 1)
+    Log.d("rotation for i", "${angleDeg * i}")
     save()
-    rotate(((deg) / (lines - 1)) * i)
-    drawLine(size - (size / lFactor) * sc.divideScale(i, lines), 0f, size, 0f, paint)
+    rotate(angleDeg * i)
+    drawLine(size - (lSize * sc.divideScale(i, lines)), 0f, size, 0f, paint)
     restore()
 }
 
@@ -86,7 +91,7 @@ class BiLineHalfArcView(ctx : Context) : View(ctx) {
     data class State(var scale : Float = 0f, var dir : Float = 0f, var prevScale : Float = 0f) {
 
         fun update(cb : (Float) -> Unit) {
-            scale += scale.updateValue(dir, lines, 1)
+            scale += scale.updateValue(dir, 1, lines)
             if (Math.abs(scale - prevScale) > 1) {
                 scale = prevScale + dir
                 dir = 0f
@@ -108,7 +113,7 @@ class BiLineHalfArcView(ctx : Context) : View(ctx) {
         fun animate(cb : () -> Unit) {
             cb()
             try {
-                Thread.sleep(50)
+                Thread.sleep(delay)
                 view.invalidate()
             } catch(ex : Exception) {
 
