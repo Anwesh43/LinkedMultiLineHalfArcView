@@ -218,4 +218,13 @@ class BiLineHalfArcView(ctx : Context) : View(ctx) {
         }
 
     }
+
+    companion object {
+
+        fun create(activity : Activity) : BiLineHalfArcView {
+            val view : BiLineHalfArcView = BiLineHalfArcView(activity)
+            activity.setContentView(view)
+            return view
+        }
+    }
 }
